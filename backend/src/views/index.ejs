@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Route Optimizer</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+
+<nav class="navbar">
+
+    <div class="logo">
+        Smart Route Optimizer
+    </div>
+
+    <div class="nav-right">
+        Delhi Road Network
+    </div>
+
+</nav>
+
+
+<section class="hero">
+
+    <h1>
+        Congestion-Aware
+        <span>Multi-Stop Route Optimization</span>
+    </h1>
+
+    <p>
+        Demonstrating A* Search, Nearest Neighbor and 2-Opt
+        on a real road network with dynamic congestion.
+    </p>
+
+</section>
+
+
+
+<section class="config-wrapper">
+
+    <div class="config-card">
+
+        <div class="config-title">
+
+            <h2>Configure Route</h2>
+
+            <p>
+                Select stops and traffic conditions before running the optimizer.
+            </p>
+
+        </div>
+
+        <div class="config-grid">
+
+            <!-- LEFT -->
+
+            <div class="config-left">
+
+                <label>Select Stops</label>
+
+                <select
+                    id="stopsSelect"
+                    multiple
+                    size="10">
+                </select>
+
+                <small>
+                    Hold Ctrl / Cmd to select multiple stops.
+                </small>
+
+            </div>
+
+            <!-- RIGHT -->
+
+            <div class="config-right">
+
+                <div class="field">
+
+                    <label>Day</label>
+
+                    <select id="dayType">
+
+                        <option value="weekday">
+                            Weekday
+                        </option>
+
+                        <option value="weekend">
+                            Weekend
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="field">
+
+                    <label>Hour</label>
+
+                    <input
+                        id="hour"
+                        type="number"
+                        min="0"
+                        max="23"
+                        value="10">
+
+                </div>
+
+                <button id="optimizeBtn">
+
+                    Optimize Route
+
+                </button>
+
+                <div
+                    class="status"
+                    id="status">
+
+                    Ready
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<section class="map-wrapper">
+
+    <div class="map-card">
+
+        <div class="map-header">
+
+            <div>
+
+                <h2>
+                    Route Visualization
+                </h2>
+
+                <p>
+
+                    Optimized path over the Delhi road network.
+
+                </p>
+
+            </div>
+
+        </div>
+
+        <div id="map"></div>
+
+    </div>
+
+</section>
+
+
+
+<section
+    id="results"
+    class="results hidden">
+
+    <div class="metric-card">
+
+        <p class="metric-label">
+
+            Naive
+
+        </p>
+
+        <h2 id="naiveTime">
+
+            --
+
+        </h2>
+
+    </div>
+
+
+    <div class="metric-card">
+
+        <p class="metric-label">
+
+            Optimized
+
+        </p>
+
+        <h2 id="optimizedTime">
+
+            --
+
+        </h2>
+
+    </div>
+
+
+    <div class="metric-card">
+
+        <p class="metric-label">
+
+            Improvement
+
+        </p>
+
+        <h2 id="improvementPct">
+
+            --
+
+        </h2>
+
+    </div>
+
+</section>
+
+
+
+<section
+    id="routeSection"
+    class="route-section hidden">
+
+    <div class="route-header">
+
+        <h2>
+
+            Optimized Visit Order
+
+        </h2>
+
+    </div>
+
+    <div
+        id="routeTimeline"
+        class="timeline">
+
+    </div>
+
+</section>
+
+
+
+<footer>
+
+    Smart Route Optimizer
+
+</footer>
+
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script src="/main.js"></script>
+
+</body>
+</html>

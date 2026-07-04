@@ -1,0 +1,766 @@
+/* =====================================================
+   RESET
+===================================================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+
+    font-family:'Inter',sans-serif;
+
+    background:#060606;
+
+    color:#fff;
+
+    line-height:1.6;
+}
+
+
+/* =====================================================
+   SCROLLBAR
+===================================================== */
+
+::-webkit-scrollbar{
+    width:9px;
+}
+
+::-webkit-scrollbar-track{
+    background:#111;
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:#2c2c2c;
+
+    border-radius:20px;
+}
+
+::-webkit-scrollbar-thumb:hover{
+
+    background:#2563eb;
+}
+
+
+/* =====================================================
+   NAVBAR
+===================================================== */
+
+.navbar{
+
+    width:100%;
+
+    height:68px;
+
+    padding:0 8%;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    border-bottom:1px solid #1f1f1f;
+
+    background:#060606;
+
+    position:sticky;
+
+    top:0;
+
+    z-index:100;
+}
+
+.logo{
+
+    font-size:1.15rem;
+
+    font-weight:700;
+
+    letter-spacing:.4px;
+}
+
+.nav-right{
+
+    color:#8c8c8c;
+
+    font-size:.9rem;
+}
+
+
+/* =====================================================
+   HERO
+===================================================== */
+
+.hero{
+
+    width:min(1200px,92%);
+
+    margin:45px auto;
+
+    text-align:center;
+}
+
+.hero h1{
+
+    font-size:3rem;
+
+    font-weight:700;
+
+    line-height:1.15;
+
+    margin-bottom:16px;
+}
+
+.hero span{
+
+    color:#3b82f6;
+}
+
+.hero p{
+
+    width:min(700px,100%);
+
+    margin:auto;
+
+    color:#9ca3af;
+
+    font-size:1rem;
+}
+
+
+/* =====================================================
+   CONFIG SECTION
+===================================================== */
+
+.config-wrapper{
+
+    width:min(1200px,92%);
+
+    margin:auto;
+}
+
+.config-card{
+
+    background:#101010;
+
+    border:1px solid #222;
+
+    border-radius:18px;
+
+    padding:32px;
+}
+
+.config-title{
+
+    margin-bottom:28px;
+}
+
+.config-title h2{
+
+    font-size:1.45rem;
+
+    margin-bottom:6px;
+}
+
+.config-title p{
+
+    color:#8d8d8d;
+
+    font-size:.95rem;
+}
+
+
+/* =====================================================
+   GRID
+===================================================== */
+
+.config-grid{
+
+    display:grid;
+
+    grid-template-columns:2.2fr 1fr;
+
+    gap:35px;
+}
+
+.config-left{
+
+    display:flex;
+
+    flex-direction:column;
+}
+
+.config-right{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:20px;
+}
+
+
+/* =====================================================
+   FORM
+===================================================== */
+
+label{
+
+    font-size:.92rem;
+
+    font-weight:600;
+
+    color:#d5d5d5;
+
+    margin-bottom:8px;
+}
+
+small{
+
+    color:#757575;
+
+    margin-top:10px;
+}
+
+select,
+input{
+
+    width:100%;
+
+    padding:13px 14px;
+
+    border-radius:10px;
+
+    background:#181818;
+
+    border:1px solid #2b2b2b;
+
+    color:white;
+
+    outline:none;
+
+    transition:.2s;
+
+    font-size:.95rem;
+}
+
+select:focus,
+input:focus{
+
+    border-color:#2563eb;
+
+    box-shadow:0 0 0 3px rgba(37,99,235,.18);
+}
+
+
+/* =====================================================
+   STOPS
+===================================================== */
+
+#stopsSelect{
+
+    height:260px;
+
+    resize:none;
+}
+
+#stopsSelect option{
+
+    padding:8px;
+}
+
+
+/* =====================================================
+   BUTTON
+===================================================== */
+
+button{
+
+    width:100%;
+
+    margin-top:8px;
+
+    padding:14px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:#2563eb;
+
+    color:white;
+
+    font-size:.98rem;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.25s;
+}
+
+button:hover{
+
+    background:#1d4ed8;
+
+    transform:translateY(-2px);
+
+    box-shadow:0 10px 28px rgba(37,99,235,.28);
+}
+
+button:disabled{
+
+    opacity:.65;
+
+    cursor:not-allowed;
+
+    transform:none;
+
+    box-shadow:none;
+}
+
+
+/* =====================================================
+   STATUS
+===================================================== */
+
+.status{
+
+    background:#181818;
+
+    border:1px solid #252525;
+
+    border-radius:10px;
+
+    padding:12px;
+
+    text-align:center;
+
+    color:#a1a1aa;
+
+    font-size:.88rem;
+}
+
+
+/* =====================================================
+   MAP
+===================================================== */
+
+.map-wrapper{
+
+    width:min(1200px,92%);
+
+    margin:30px auto 0;
+}
+
+.map-card{
+
+    background:#101010;
+
+    border:1px solid #222;
+
+    border-radius:18px;
+
+    padding:25px;
+}
+
+.map-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:18px;
+}
+
+.map-header h2{
+
+    font-size:1.45rem;
+
+    margin-bottom:4px;
+}
+
+.map-header p{
+
+    color:#8b8b8b;
+
+    font-size:.92rem;
+}
+
+#map{
+
+    width:100%;
+
+    height:560px;
+
+    border-radius:14px;
+
+    overflow:hidden;
+
+    border:1px solid #222;
+}
+
+.leaflet-container{
+
+    background:#101010;
+}
+
+.leaflet-popup-content-wrapper{
+
+    background:#151515;
+
+    color:white;
+}
+
+.leaflet-popup-tip{
+
+    background:#151515;
+}
+
+/* =====================================================
+   RESULTS
+===================================================== */
+
+.results{
+
+    width:min(1200px,92%);
+
+    margin:35px auto;
+
+    display:grid;
+
+    grid-template-columns:repeat(3,1fr);
+
+    gap:20px;
+}
+
+.hidden{
+
+    display:none;
+}
+
+.metric-card{
+
+    background:#101010;
+
+    border:1px solid #222;
+
+    border-radius:16px;
+
+    padding:26px;
+
+    text-align:center;
+
+    transition:.25s;
+}
+
+.metric-card:hover{
+
+    transform:translateY(-3px);
+
+    border-color:#2563eb;
+}
+
+.metric-label{
+
+    color:#8b8b8b;
+
+    font-size:.82rem;
+
+    text-transform:uppercase;
+
+    letter-spacing:1px;
+
+    margin-bottom:14px;
+}
+
+.metric-card h2{
+
+    font-size:2.35rem;
+
+    font-weight:700;
+}
+
+.metric-card span{
+
+    display:block;
+
+    margin-top:10px;
+
+    color:#7a7a7a;
+
+    font-size:.9rem;
+}
+
+
+/* =====================================================
+   ROUTE SECTION
+===================================================== */
+
+.route-section{
+
+    width:min(1200px,92%);
+
+    margin:0 auto 60px;
+
+    background:#101010;
+
+    border:1px solid #222;
+
+    border-radius:16px;
+
+    padding:28px;
+}
+
+.route-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:20px;
+}
+
+.route-header h2{
+
+    font-size:1.35rem;
+}
+
+
+/* =====================================================
+   HORIZONTAL TIMELINE
+===================================================== */
+
+.timeline{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:14px;
+
+    overflow-x:auto;
+
+    padding:10px 0 6px;
+}
+
+.timeline::-webkit-scrollbar{
+
+    height:8px;
+}
+
+.timeline::-webkit-scrollbar-thumb{
+
+    background:#2b2b2b;
+}
+
+.timeline-item{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    flex-shrink:0;
+}
+
+.timeline-number{
+
+    width:42px;
+
+    height:42px;
+
+    border-radius:50%;
+
+    background:#2563eb;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-weight:700;
+
+    flex-shrink:0;
+}
+
+.timeline-content{
+
+    min-width:170px;
+
+    background:#181818;
+
+    border:1px solid #282828;
+
+    border-radius:12px;
+
+    padding:14px 18px;
+
+    transition:.2s;
+}
+
+.timeline-content:hover{
+
+    border-color:#2563eb;
+
+    transform:translateY(-2px);
+}
+
+.timeline-content h3{
+
+    font-size:1rem;
+
+    margin-bottom:3px;
+}
+
+.timeline-content p{
+
+    color:#8c8c8c;
+
+    font-size:.85rem;
+}
+
+.timeline-arrow{
+
+    color:#2563eb;
+
+    font-size:28px;
+
+    flex-shrink:0;
+
+    font-weight:700;
+}
+
+
+/* =====================================================
+   FOOTER
+===================================================== */
+
+footer{
+
+    width:min(1200px,92%);
+
+    margin:25px auto;
+
+    padding-top:20px;
+
+    border-top:1px solid #202020;
+
+    text-align:center;
+
+    color:#707070;
+
+    font-size:.9rem;
+}
+
+
+/* =====================================================
+   ANIMATION
+===================================================== */
+
+@keyframes fadeUp{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(16px);
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+    }
+}
+
+.config-card,
+.map-card,
+.metric-card,
+.route-section{
+
+    animation:fadeUp .45s ease;
+}
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media(max-width:900px){
+
+    .config-grid{
+
+        grid-template-columns:1fr;
+    }
+
+    .config-right{
+
+        gap:16px;
+    }
+
+    #map{
+
+        height:460px;
+    }
+
+    .results{
+
+        grid-template-columns:1fr;
+    }
+}
+
+@media(max-width:700px){
+
+    .navbar{
+
+        padding:0 20px;
+    }
+
+    .nav-right{
+
+        display:none;
+    }
+
+    .hero{
+
+        margin:35px auto;
+    }
+
+    .hero h1{
+
+        font-size:2.15rem;
+    }
+
+    .config-card,
+    .map-card,
+    .route-section{
+
+        padding:20px;
+    }
+
+    #map{
+
+        height:380px;
+    }
+
+    .timeline-content{
+
+        min-width:150px;
+    }
+}
