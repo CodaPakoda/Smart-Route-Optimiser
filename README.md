@@ -6,7 +6,7 @@ Congestion-aware multi-stop route optimization on a real road network, built wit
 
 Given a set of stops, this system computes the optimal visiting order and route, accounting for real road distances and time-dependent traffic congestion, then compares it against the naive (input-order) route. It's built on a real OpenStreetMap road network around India Gate, New Delhi.
 
-**Live demo:** select stops on the map, choose a day type and hour, and see the naive vs. optimized route with real time savings.
+**Application workflow:** select stops on the map, choose a day type and hour, and compare the naive and optimized routes with the resulting time savings.
 
 ## Screenshots
 
@@ -22,7 +22,7 @@ Given a set of stops, this system computes the optimal visiting order and route,
 </table>
 
 <p align="center">
-  <img src="assets/screenshot-results.png" alt="Results and optimized visit order" width="85%">
+  <img src="assets/screenshot-results.png" alt="Results and optimized visit order" width="70%">
   <br>
   <sub>Naive vs. optimized comparison, with the resulting visit order</sub>
 </p>
@@ -63,6 +63,22 @@ The dataset is built once, offline. The live app never calls external APIs; ever
 - **2-opt**: local search that iteratively reverses segments of the route if doing so reduces total time, correcting nearest-neighbor's mistakes.
 - **Why not exact TSP?** Exact TSP (e.g. Held-Karp DP) is O(n²·2ⁿ), which is infeasible to compute per-request as stop counts grow. Nearest-neighbor + 2-opt is a standard, well-understood tradeoff that gives near-optimal results in polynomial time.
 
+## Complexity analysis
+
+Let V = nodes in the full road graph (374), E = edges (1,174), and n = number of stops in a single trip request (typically 5-12).
+
+| Step | Complexity | Notes |
+|---|---|---|
+| A* (single pairwise query) | O(E log V) | Binary heap priority queue; explores a subset of V/E in practice, worst case bounds by full graph |
+| Distance matrix build | O(n² · E log V) | Runs A* once for every ordered pair of stops |
+| Nearest-neighbor | O(n²) | For each of n steps, scans up to n remaining candidates |
+| 2-opt (one full pass) | O(n²) | Checks every pair of positions in the current route |
+| 2-opt (to convergence) | O(k · n²) | k = number of improving passes until no swap helps; k is small in practice since n is small (≤ 15-20 stops) |
+
+The distance matrix build dominates overall runtime, since it's the only step touching the full road graph (V, E) rather than just the small stop count (n). This is why the design keeps the *stop-candidate* set small (40 nodes) even though the underlying road graph is much larger (374 nodes): the algorithm's practical cost scales with how many stops a user picks per request, not with the size of the city graph.
+
+Space complexity is dominated by the road graph itself (O(V + E) for the adjacency list) plus O(n²) for the distance matrix, both small enough to keep everything in memory for a single request.
+
 ## Dataset
 
 | Property | Value |
@@ -91,7 +107,7 @@ Naive (input order) vs. optimized (nearest-neighbor + 2-opt) route time, across 
 | D | 6 | Weekend | 14 | 20.1 | 12.7 | 36.8% |
 | E | 12 | Weekend | 19 | 38.3 | 20.9 | 45.4% |
 
-Average improvement across scenarios with room to optimize is about 48%. Scenario A shows 0% improvement; with only 5 stops, the naive input order happened to already be near-optimal for that particular combination, which is expected and realistic since not every input has room for improvement.
+Across representative test scenarios, the optimizer reduced total travel time by 36-65%, with an average improvement of approximately 48% where optimization opportunities existed. Scenario A shows 0% improvement; with only 5 stops, the naive input order happened to already be near-optimal for that particular combination, which is expected and realistic since not every input has room for improvement.
 
 ## Tech stack
 
