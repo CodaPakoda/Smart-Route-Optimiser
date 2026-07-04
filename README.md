@@ -4,7 +4,7 @@ Congestion-aware multi-stop route optimization on a real road network, built wit
 
 ## Overview
 
-Given a set of stops, this system computes the optimal visiting order and route — accounting for real road distances *and* time-dependent traffic congestion — and compares it against the naive (input-order) route. It's built on a real OpenStreetMap road network around India Gate, New Delhi.
+Given a set of stops, this system computes the optimal visiting order and route, accounting for real road distances and time-dependent traffic congestion, then compares it against the naive (input-order) route. It's built on a real OpenStreetMap road network around India Gate, New Delhi.
 
 **Live demo:** select stops on the map, choose a day type and hour, and see the naive vs. optimized route with real time savings.
 
@@ -40,9 +40,9 @@ Backend (Node/Express)
         │
         ▼
 C++ Optimizer Core
-   1. A* — congestion-aware shortest path between any two nodes
-   2. Nearest-neighbor — initial visiting order for all stops
-   3. 2-opt — local search improvement over that order
+   1. A* - congestion-aware shortest path between any two nodes
+   2. Nearest-neighbor - initial visiting order for all stops
+   3. 2-opt - local search improvement over that order
         ▲
         │ reads from
 SQLite Database
@@ -54,14 +54,14 @@ data/build_graph.py + data/generate_congestion.py
    - Synthetic (seeded) congestion zones and time-based patterns
 ```
 
-The dataset is built **once, offline**. The live app never calls external APIs — every request is a DB lookup plus C++ computation. This avoids live rate-limit dependency and keeps the app fast and reproducible.
+The dataset is built once, offline. The live app never calls external APIs; every request is just a DB lookup plus C++ computation. This avoids live rate-limit dependency and keeps the app fast and reproducible.
 
 ## Why these algorithms
 
-- **A\* with a haversine heuristic**: finds the congestion-aware shortest path between any two nodes on the road graph. The heuristic biases search toward the goal instead of exploring uniformly in all directions (Dijkstra's behavior), which matters once congestion zones create uneven edge weights across multiple possible routes.
-- **Nearest-neighbor**: a greedy heuristic for building an initial stop-visiting order. Fast, but not optimal — it can get locally stuck in a suboptimal order.
+- **A\* with a haversine heuristic**: finds the congestion-aware shortest path between any two nodes on the road graph. The heuristic biases search toward the goal instead of exploring uniformly in all directions like Dijkstra does, which matters once congestion zones create uneven edge weights across multiple possible routes.
+- **Nearest-neighbor**: a greedy heuristic for building an initial stop-visiting order. Fast, but not optimal, since it can get locally stuck in a suboptimal order.
 - **2-opt**: local search that iteratively reverses segments of the route if doing so reduces total time, correcting nearest-neighbor's mistakes.
-- **Why not exact TSP?** Exact TSP (e.g., Held-Karp DP) is O(n²·2ⁿ) — infeasible to compute per-request as stop counts grow. Nearest-neighbor + 2-opt is a standard, well-understood tradeoff: near-optimal results in polynomial time.
+- **Why not exact TSP?** Exact TSP (e.g. Held-Karp DP) is O(n²·2ⁿ), which is infeasible to compute per-request as stop counts grow. Nearest-neighbor + 2-opt is a standard, well-understood tradeoff that gives near-optimal results in polynomial time.
 
 ## Dataset
 
@@ -76,7 +76,7 @@ The dataset is built **once, offline**. The live app never calls external APIs �
 
 **Data sources:**
 - Road network: [OSMnx](https://osmnx.readthedocs.io/) extraction from OpenStreetMap (real intersections, real road distances and estimated travel times)
-- Congestion zones/patterns: seeded/simulated — 40 zones sampled from real road nodes, assigned low/medium/high severity tiers with time-based multipliers based on typical urban traffic patterns. **Not live traffic data.** A production version would integrate a live traffic API (e.g., TomTom Traffic API) instead.
+- Congestion zones/patterns: seeded/simulated. 40 zones sampled from real road nodes, assigned low/medium/high severity tiers with time-based multipliers based on typical urban traffic patterns. This is not live traffic data; a production version would integrate a live traffic API (e.g. TomTom Traffic API) instead.
 - Edges are treated as bidirectional (one-way street restrictions simplified) to guarantee route connectivity across any stop selection.
 
 ## Results
@@ -91,7 +91,7 @@ Naive (input order) vs. optimized (nearest-neighbor + 2-opt) route time, across 
 | D | 6 | Weekend | 14 | 20.1 | 12.7 | 36.8% |
 | E | 12 | Weekend | 19 | 38.3 | 20.9 | 45.4% |
 
-**Average improvement across scenarios with room to optimize: ~48%.** Scenario A shows 0% improvement — with only 5 stops, the naive input order happened to already be near-optimal for that particular combination, which is expected and realistic (not every input has room for improvement).
+Average improvement across scenarios with room to optimize is about 48%. Scenario A shows 0% improvement; with only 5 stops, the naive input order happened to already be near-optimal for that particular combination, which is expected and realistic since not every input has room for improvement.
 
 ## Tech stack
 
@@ -125,11 +125,11 @@ Open `http://localhost:3000/`.
 
 ## Limitations & future work
 
-- Congestion data is seeded/simulated, not live — noted above, would integrate a real traffic API in production
-- One-way street restrictions are ignored (edges treated as bidirectional) to guarantee connectivity across arbitrary stop selections
-- Congestion detection uses a simple radius check around zone centroids rather than real road-polyline intersection
-- Exact TSP (e.g., bitmask DP for small n) could replace the heuristic for very small stop counts where optimality matters more than speed
-- Precomputing full distance matrices for the whole stop-candidate set (rather than per-request) could reduce latency further for high-traffic use
+- Congestion data is seeded/simulated, not live, as noted above. Would integrate a real traffic API in production.
+- One-way street restrictions are ignored (edges treated as bidirectional) to guarantee connectivity across arbitrary stop selections.
+- Congestion detection uses a simple radius check around zone centroids rather than real road-polyline intersection.
+- Exact TSP (e.g. bitmask DP for small n) could replace the heuristic for very small stop counts where optimality matters more than speed.
+- Precomputing full distance matrices for the whole stop-candidate set (rather than per-request) could reduce latency further for high-traffic use.
 
 ## Project structure
 
