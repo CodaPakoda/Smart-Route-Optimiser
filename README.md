@@ -22,7 +22,7 @@ Given a set of stops, this system computes the optimal visiting order and route,
 </table>
 
 <p align="center">
-  <img src="assets/screenshot-results.png" alt="Results and optimized visit order" width="85%">
+  <img src="assets/screenshot-results.png" alt="Results and optimized visit order" width="50%">
   <br>
   <sub>Naive vs. optimized comparison, with the resulting visit order</sub>
 </p>
