@@ -1,10 +1,9 @@
 import pandas as pd
 import random
 
-random.seed(42)  # reproducible results
+random.seed(42)
 
 NUM_AREAS = 40
-PATTERNS_PER_AREA = 3  # 40 * 3 = 120 total
 
 nodes = pd.read_csv("data/raw/nodes.csv")
 all_node_ids = nodes["node_id"].tolist()
@@ -15,10 +14,21 @@ tiers = (["low"] * 13) + (["medium"] * 13) + (["high"] * 14)
 random.shuffle(tiers)
 
 tier_config = {
-    "low":    {"radius": (80, 120),  "level": (1.2, 1.4)},
-    "medium": {"radius": (120, 180), "level": (1.4, 1.7)},
-    "high":   {"radius": (180, 250), "level": (1.7, 2.2)},
+    "low":    {"radius": (80, 120),  "level": (1.2, 1.4), "scale": 0.7},
+    "medium": {"radius": (120, 180), "level": (1.4, 1.7), "scale": 1.0},
+    "high":   {"radius": (180, 250), "level": (1.7, 2.2), "scale": 1.4},
 }
+
+# ---- Read the real hourly traffic curve (from Kaggle data, via analyze_kaggle_traffic.py) ----
+hourly = pd.read_csv("data/raw/hourly_traffic_curve.csv")
+
+# ---- Compute ratio-to-baseline for every (day_type, hour) directly from real data ----
+hourly_ratios = {}
+for day_type in ["weekday", "weekend"]:
+    sub = hourly[hourly["day_type"] == day_type]
+    baseline = sub["Total"].mean()
+    for _, row in sub.iterrows():
+        hourly_ratios[(day_type, int(row["hour"]))] = row["Total"] / baseline
 
 areas = []
 patterns = []
@@ -30,6 +40,7 @@ for i, node_id in enumerate(chosen_ids):
     cfg = tier_config[tier]
     radius = round(random.uniform(*cfg["radius"]), 1)
     base_level = round(random.uniform(*cfg["level"]), 2)
+    scale = cfg["scale"]
 
     areas.append({
         "id": area_id,
@@ -40,35 +51,23 @@ for i, node_id in enumerate(chosen_ids):
         "base_congestion_level": base_level
     })
 
-    # Pattern 1: weekday morning rush
-    patterns.append({
-        "id": pattern_id, "area_id": area_id, "day_type": "weekday",
-        "hour_start": 8, "hour_end": 11,
-        "congestion_multiplier": round(base_level * random.uniform(1.0, 1.3), 2)
-    })
-    pattern_id += 1
-
-    # Pattern 2: weekday evening rush
-    patterns.append({
-        "id": pattern_id, "area_id": area_id, "day_type": "weekday",
-        "hour_start": 17, "hour_end": 20,
-        "congestion_multiplier": round(base_level * random.uniform(1.0, 1.3), 2)
-    })
-    pattern_id += 1
-
-    # Pattern 3: weekend (either midday or evening)
-    if random.random() < 0.5:
-        hs, he = 12, 15
-    else:
-        hs, he = 17, 21
-    patterns.append({
-        "id": pattern_id, "area_id": area_id, "day_type": "weekend",
-        "hour_start": hs, "hour_end": he,
-        "congestion_multiplier": round(base_level * random.uniform(0.9, 1.2), 2)
-    })
-    pattern_id += 1
+    # One pattern per (day_type, hour) - full 24h curve, both day types
+    for day_type in ["weekday", "weekend"]:
+        for hour in range(24):
+            ratio = hourly_ratios[(day_type, hour)]
+            multiplier = 1 + (ratio - 1) * scale
+            patterns.append({
+                "id": pattern_id,
+                "area_id": area_id,
+                "day_type": day_type,
+                "hour_start": hour,
+                "hour_end": hour + 1,
+                "congestion_multiplier": round(multiplier, 3)
+            })
+            pattern_id += 1
 
 pd.DataFrame(areas).to_csv("data/raw/congested_areas.csv", index=False)
 pd.DataFrame(patterns).to_csv("data/raw/traffic_patterns.csv", index=False)
 
 print(f"Generated {len(areas)} congested areas and {len(patterns)} traffic patterns")
+print(f"Patterns per area: 48 (24 hours x 2 day types), fully derived from data/raw/hourly_traffic_curve.csv")

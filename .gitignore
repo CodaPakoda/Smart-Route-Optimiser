@@ -23,3 +23,6 @@ cache/
 
 # Logs
 *.log
+
+data/raw/kaggle_traffic.csv
+backend/src/db/app.db

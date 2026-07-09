@@ -22,7 +22,7 @@ Given a set of stops, this system computes the optimal visiting order and route,
 </table>
 
 <p align="center">
-  <img src="assets/screenshot-results.png" alt="Results and optimized visit order" width="70%">
+  <img src="assets/screenshot-results.png" alt="Results and optimized visit order" width="85%">
   <br>
   <sub>Naive vs. optimized comparison, with the resulting visit order</sub>
 </p>
@@ -49,9 +49,10 @@ SQLite Database
    nodes, edges, congested_areas, traffic_patterns, trips
         ▲
         │ one-time, offline
-data/build_graph.py + data/generate_congestion.py
+data/build_graph.py + data/analyze_kaggle_traffic.py + data/generate_congestion.py
    - OSMnx: real road network extraction
-   - Synthetic (seeded) congestion zones and time-based patterns
+   - Kaggle traffic volume data: real hourly congestion curve
+   - Seeded congestion zone placement, data-derived time multipliers
 ```
 
 The dataset is built once, offline. The live app never calls external APIs; every request is just a DB lookup plus C++ computation. This avoids live rate-limit dependency and keeps the app fast and reproducible.
@@ -75,7 +76,7 @@ Let V = nodes in the full road graph (374), E = edges (1,174), and n = number of
 | 2-opt (one full pass) | O(n²) | Checks every pair of positions in the current route |
 | 2-opt (to convergence) | O(k · n²) | k = number of improving passes until no swap helps; k is small in practice since n is small (≤ 15-20 stops) |
 
-The distance matrix build dominates overall runtime, since it's the only step touching the full road graph (V, E) rather than just the small stop count (n). This is why the design keeps the *stop-candidate* set small (40 nodes) even though the underlying road graph is much larger (374 nodes): the algorithm's practical cost scales with how many stops a user picks per request, not with the size of the city graph.
+The distance matrix build dominates overall runtime, since it's the only step touching the full road graph (V, E) rather than just the small stop count (n). This is why the design keeps the *main node* set small (40 nodes) even though the underlying road graph is much larger (374 nodes): the algorithm's practical cost scales with how many stops a user picks per request, not with the size of the city graph.
 
 Space complexity is dominated by the road graph itself (O(V + E) for the adjacency list) plus O(n²) for the distance matrix, both small enough to keep everything in memory for a single request.
 
@@ -86,13 +87,14 @@ Space complexity is dominated by the road graph itself (O(V + E) for the adjacen
 | Location | India Gate area, New Delhi (1.5km radius) |
 | Total road nodes | 374 |
 | Total road edges | 1,174 (bidirectional) |
-| Stop candidates | 40 (12 major / 18 medium / 10 minor junctions, ranked by degree, min. 150m spacing) |
-| Congestion zones | 40 (scattered across all road nodes, not just stops) |
-| Traffic patterns | 120 (weekday morning/evening rush + weekend, per zone) |
+| Main nodes (selectable stops) | 40 (12 major / 18 medium / 10 minor junctions, ranked by degree, min. 150m spacing) |
+| Congestion areas | 40 (randomly sampled from all 374 road nodes, independent of main nodes) |
+| Traffic patterns | 1,920 (40 areas x 24 hours x 2 day types, one real data-derived multiplier per hour) |
 
 **Data sources:**
 - Road network: [OSMnx](https://osmnx.readthedocs.io/) extraction from OpenStreetMap (real intersections, real road distances and estimated travel times)
-- Congestion zones/patterns: seeded/simulated. 40 zones sampled from real road nodes, assigned low/medium/high severity tiers with time-based multipliers based on typical urban traffic patterns. This is not live traffic data; a production version would integrate a live traffic API (e.g. TomTom Traffic API) instead.
+- Congestion timing: derived from the [Traffic Prediction Dataset](https://www.kaggle.com/datasets/hasibullahaman/traffic-prediction-dataset) on Kaggle, real vehicle-count data (cars, bikes, buses, trucks) collected via computer vision at a road intersection in 15-minute intervals over a month. `data/analyze_kaggle_traffic.py` computes the average traffic volume for every (day type, hour) combination and expresses it as a ratio to that day type's 24-hour baseline. `data/generate_congestion.py` reads this curve directly and applies it to every congestion area, scaled by that area's severity tier (low/medium/high).
+- Congestion zone *locations* are still simulated: 40 nodes are randomly sampled from the road graph, since no real geographic congestion data exists for this specific area. The *timing and relative severity* of congestion at those zones is what's grounded in real data, not the zones' placement.
 - Edges are treated as bidirectional (one-way street restrictions simplified) to guarantee route connectivity across any stop selection.
 
 ## Results
@@ -101,13 +103,15 @@ Naive (input order) vs. optimized (nearest-neighbor + 2-opt) route time, across 
 
 | Scenario | Stops | Day | Hour | Naive (min) | Optimized (min) | Improvement |
 |---|---|---|---|---|---|---|
-| A | 5 | Weekday | 9 | 8.7 | 8.7 | 0.0% |
-| B | 8 | Weekday | 10 | 38.9 | 13.6 | 65.0% |
-| C | 10 | Weekday | 18 | 32.6 | 17.9 | 45.0% |
-| D | 6 | Weekend | 14 | 20.1 | 12.7 | 36.8% |
-| E | 12 | Weekend | 19 | 38.3 | 20.9 | 45.4% |
+| A | 5 | Weekday | 9 | 6.4 | 6.4 | 0.0% |
+| B | 8 | Weekday | 10 | 24.0 | 9.0 | 62.6% |
+| C | 10 | Weekday | 18 | 29.8 | 14.5 | 51.3% |
+| D | 6 | Weekend | 14 | 12.8 | 9.6 | 25.1% |
+| E | 12 | Weekend | 19 | 37.6 | 18.4 | 51.2% |
 
-Across representative test scenarios, the optimizer reduced total travel time by 36-65%, with an average improvement of approximately 48% where optimization opportunities existed. Scenario A shows 0% improvement; with only 5 stops, the naive input order happened to already be near-optimal for that particular combination, which is expected and realistic since not every input has room for improvement.
+Across representative test scenarios, the optimizer reduced total travel time by 25-63%, with an average improvement of approximately 47.5% where optimization opportunities existed. Scenario A shows 0% improvement; with only 5 stops, the naive input order happened to already be near-optimal for that particular combination, which is expected and realistic since not every input has room for improvement.
+
+The naive baseline still uses real, congestion-aware A* pathfinding between each consecutive stop, it is not artificially weakened. The only difference between naive and optimized is whether the stop order itself is improved by nearest-neighbor + 2-opt.
 
 ## Tech stack
 
@@ -128,6 +132,7 @@ cd ../..
 
 # 2. Build the dataset (one-time)
 python3 data/build_graph.py
+python3 data/analyze_kaggle_traffic.py
 python3 data/generate_congestion.py
 python3 data/load_db.py
 
@@ -139,19 +144,22 @@ npm start
 
 Open `http://localhost:3000/`.
 
+Note: `data/analyze_kaggle_traffic.py` requires `data/raw/kaggle_traffic.csv`, downloaded separately from the [Traffic Prediction Dataset](https://www.kaggle.com/datasets/hasibullahaman/traffic-prediction-dataset) on Kaggle (not included in this repo).
+
 ## Limitations & future work
 
-- Congestion data is seeded/simulated, not live, as noted above. Would integrate a real traffic API in production.
+- Congestion zone *locations* are simulated (randomly sampled), not real; only the timing and relative severity of congestion is grounded in real data, as noted above.
 - One-way street restrictions are ignored (edges treated as bidirectional) to guarantee connectivity across arbitrary stop selections.
 - Congestion detection uses a simple radius check around zone centroids rather than real road-polyline intersection.
 - Exact TSP (e.g. bitmask DP for small n) could replace the heuristic for very small stop counts where optimality matters more than speed.
-- Precomputing full distance matrices for the whole stop-candidate set (rather than per-request) could reduce latency further for high-traffic use.
+- Precomputing full distance matrices for the whole main-node set (rather than per-request) could reduce latency further for high-traffic use.
+- The C++/Node bridge uses one-shot subprocess calls; a long-running service with a persistent connection would remove per-request process-spawn overhead at larger scale.
 
 ## Project structure
 
 ```
 route-optimiser/
-├── data/              # dataset build scripts (OSMnx, congestion generation, DB loader)
+├── data/              # dataset build scripts (OSMnx, Kaggle traffic analysis, congestion generation, DB loader)
 ├── optimizer/         # C++ core (A*, nearest-neighbor, 2-opt)
 ├── backend/           # Express server, API routes, SQLite, EJS frontend
 ├── assets/            # README screenshots
